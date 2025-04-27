@@ -2,7 +2,7 @@ use bevy::{
     log::{Level, LogPlugin},
     prelude::*,
 };
-use bevy_egui::{EguiContextSettings, EguiContexts, EguiPlugin};
+use bevy_egui::{EguiContextPass, EguiContextSettings, EguiContexts, EguiPlugin};
 
 struct Images {
     bevy_icon: Handle<Image>,
@@ -43,11 +43,15 @@ fn main() {
                     ..default()
                 }),
         )
-        .add_plugins(EguiPlugin)
+        .add_plugins(EguiPlugin {
+            enable_multipass_for_primary_context: true,
+        })
         .add_systems(Startup, configure_visuals_system)
         .add_systems(Startup, configure_ui_state_system)
-        .add_systems(Update, update_ui_scale_factor_system)
-        .add_systems(Update, ui_example_system)
+        .add_systems(
+            EguiContextPass,
+            (ui_example_system, update_ui_scale_factor_system),
+        )
         .run();
 }
 #[derive(Default, Resource)]
@@ -79,7 +83,7 @@ fn update_ui_scale_factor_system(
     if keyboard_input.just_pressed(KeyCode::Slash) || toggle_scale_factor.is_none() {
         *toggle_scale_factor = Some(!toggle_scale_factor.unwrap_or(true));
 
-        if let Ok((mut egui_settings, window)) = contexts.get_single_mut() {
+        if let Ok((mut egui_settings, window)) = contexts.single_mut() {
             let scale_factor = if toggle_scale_factor.unwrap() {
                 1.0
             } else {
@@ -234,7 +238,7 @@ fn ui_example_system(
             .ctx_mut()
             .copy_image(egui::ColorImage::from_rgba_unmultiplied(
                 image.size().to_array().map(|a| a as usize),
-                &image.data,
+                image.data.as_ref().expect("image data"),
             ));
     }
     if remove {

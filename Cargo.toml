@@ -1,6 +1,6 @@
 [package]
 name = "bevy_egui"
-version = "0.33.0"
+version = "0.34.1"
 # Needed for LazyLock https://doc.rust-lang.org/stable/std/sync/struct.LazyLock.html
 rust-version = "1.80.0"
 authors = ["vladbat00 <vladyslav.batyrenko@gmail.com>"]
@@ -11,12 +11,12 @@ repository = "https://github.com/vladbat00/bevy_egui"
 exclude = ["assets/**/*", ".github/**/*"]
 
 [package.metadata.docs.rs]
-features = ["bevy_winit/x11"]
-all-features = true
+features = ["bevy_winit/x11", "immutable_ctx"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [features]
 default = ["manage_clipboard", "open_url", "default_fonts", "render", "picking"]
+accesskit_placeholder = ["egui/accesskit", "bevy_a11y"] # the feature won't compile until Egui updates its accesskit version, hence disabled by default
 immutable_ctx = []
 manage_clipboard = ["arboard", "thread_local", "bytemuck"]
 open_url = ["webbrowser"]
@@ -34,6 +34,8 @@ picking = ["bevy_picking"]
 serde = ["egui/serde"]
 # The enabled logs will print with the info log level, to make it less cumbersome to debug in browsers.
 log_input_events = []
+# The enabled logs will print with the info log level, to make it less cumbersome to debug in browsers.
+log_file_dnd_events = []
 
 [[example]]
 name = "absorb_input"
@@ -48,6 +50,9 @@ required-features = ["render"]
 name = "render_to_image_widget"
 required-features = ["render"]
 [[example]]
+name = "run_manually"
+required-features = ["render"]
+[[example]]
 name = "side_panel_2d"
 required-features = ["render"]
 [[example]]
@@ -55,9 +60,6 @@ name = "side_panel_3d"
 required-features = ["render"]
 [[example]]
 name = "simple"
-required-features = ["render"]
-[[example]]
-name = "simple_multipass"
 required-features = ["render"]
 [[example]]
 name = "two_windows"
@@ -68,6 +70,9 @@ required-features = ["render"]
 [[example]]
 name = "render_egui_to_image"
 required-features = ["picking", "render", "bevy/bevy_gizmos"]
+[[example]]
+name = "file_browse"
+required-features = ["render"]
 
 [dependencies]
 egui = { version = "0.31", default-features = false }
@@ -92,7 +97,7 @@ bevy_asset = { path = "../../bevy_engine/crates/bevy_asset" , optional = true }
 bevy_image = { path = "../../bevy_engine/crates/bevy_image" , optional = true }
 bevy_render = { path = "../../bevy_engine/crates/bevy_render" , optional = true }
 encase = { version = "0.10", optional = true }
-wgpu-types = { version = "23.0", optional = true }
+wgpu-types = { version = "24.0", optional = true }
 
 # `picking` feature
 bevy_picking = { path = "../../bevy_engine/crates/bevy_picking" , optional = true }
@@ -103,8 +108,10 @@ arboard = { version = "3.2.0", optional = true }
 thread_local = { version = "1.1.0", optional = true }
 
 [dev-dependencies]
-version-sync = "0.9.4"
+version-sync = "0.9.5"
 bevy = { path = "../../bevy_engine" , default-features = false, features = [
+    "accesskit_unix",
+    "bevy_log",
     "bevy_asset",
     "bevy_core_pipeline",
     "bevy_pbr",
@@ -114,11 +121,15 @@ bevy = { path = "../../bevy_engine" , default-features = false, features = [
     "bevy_winit",
     "android-game-activity",
     "png",
+    "std",
     "tonemapping_luts",
     "webgl2",
     "x11",
 ] }
 egui = { version = "0.31", default-features = false, features = ["bytemuck"] }
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios", target_arch = "wasm32")))'.dev-dependencies]
+rfd = "0.15"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 winit = "0.30"
@@ -139,6 +150,6 @@ web-sys = { version = "0.3.74", features = [
 ] }
 image = { version = "0.25.5", features = ["png"] } # For copying images
 js-sys = "0.3.63"
-wasm-bindgen = "0.2.84"
+wasm-bindgen = "0.2.93"
 wasm-bindgen-futures = "0.4.36"
 crossbeam-channel = "0.5.8"
