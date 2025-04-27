@@ -76,6 +76,7 @@ required-features = ["render"]
 
 [dependencies]
 egui = { version = "0.31", default-features = false }
+bevy_a11y = { path = "../../bevy_engine/crates/bevy_a11y", optional = true }
 bevy_app = { path = "../../bevy_engine/crates/bevy_app" }
 bevy_derive = { path = "../../bevy_engine/crates/bevy_derive" }
 bevy_ecs = { path = "../../bevy_engine/crates/bevy_ecs" }
@@ -87,6 +88,7 @@ bevy_time = { path = "../../bevy_engine/crates/bevy_time" }
 bevy_utils = { path = "../../bevy_engine/crates/bevy_utils" }
 bevy_winit = {  path = "../../bevy_engine/crates/bevy_winit", features = ["custom_cursor"] }
 bevy_window = { path = "../../bevy_engine/crates/bevy_window" }
+bevy_platform = { path = "../../bevy_engine/crates/bevy_platform" }
 
 # `open_url` feature
 webbrowser = { version = "1.0.1", optional = true }
